@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site":"auradmin",
+    "site":"gdgnadmin",
     "public": "dist",
     "ignore": [
       "firebase.json",
