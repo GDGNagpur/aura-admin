@@ -370,6 +370,14 @@
                         outlined
                       ></v-text-field>
                     </v-col>
+                    <v-col md="4" xs="4" lg="4" cols="12" class="ma-0">
+                      <v-text-field
+                        v-model="updatedeventData.links.youtube"
+                        class="ma-0"
+                        label="Youtube Live URL"
+                        outlined
+                      ></v-text-field>
+                    </v-col>
                   </v-row>
 
                   <v-row class>
@@ -430,7 +438,10 @@
 </template>
 
 <script>
-import firebase from "@/config/firebase";
+import TeamServices from '@/services/TeamServices'
+import PartnersServices from "@/services/PartnersServices"
+import SpeakerServices from '@/services/SpeakersServices'
+import CustomEventServices from '@/services/CustomEventServices'
 export default {
   components: {
     AddNewAgenda:()=>import('@/components/Events/CustomEvents/AddNewAgenda'),
@@ -492,7 +503,8 @@ export default {
           facebook: this.eventInfo.links.facebook,
           registration: this.eventInfo.links.registration,
           feedback: this.eventInfo.links.feedback,
-          callforspeaker: this.eventInfo.links.callforspeaker
+          callforspeaker: this.eventInfo.links.callforspeaker,
+          youtube:this.eventInfo.links.youtube
         },
         time: {
           starttime: this.eventInfo.time.starttime,
@@ -519,44 +531,32 @@ export default {
       this.updatedeventData.agenda.splice(index, 1);
     },
     ShowSpeakers() {
-      firebase.firestore
-        .collection("Speakers")
-        .get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            this.speakersData.push(doc.data());
-          });
-        })
-        .catch(err => {
-          console.log("Error getting documents", err);
-        });
+      this.speakersData = []
+      SpeakerServices.getAllSpeakers().then(res=>{
+        if(res.success == true){
+          this.speakersData = res.data
+        }
+      }).catch(e=>{
+        console.log("Error getting documents", e);
+      })
     },
     ShowPartners() {
-      firebase.firestore
-        .collection("partners")
-        .get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            this.partnersData.push(doc.data());
-          });
-        })
-        .catch(err => {
-          console.log("Error getting documents", err);
-        });
+      this.partnersData = []
+      PartnersServices.getAllPartners().then(res=>{
+        if(res.success==true){
+          this.partnersData= res.data
+        }
+      }).catch(e=>{
+        console.log("Error getting documents", e);
+      })
     },
     ShowTeam() {
-      firebase.firestore
-        .collection("team")
-        .orderBy("role", "asc")
-        .get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            this.teamData.push(doc.data());
-          });
-        })
-        .catch(err => {
-          console.log("Error getting documents", err);
-        });
+      this.teamData=[]
+      TeamServices.getAllTeam().then(res=>{
+        this.teamData = res.data
+      }).catch(e=>{
+        console.log("Error getting documents", e)
+      })
     },
     remove(item) {
       this.updatedeventData.hashtags.splice(
@@ -566,13 +566,8 @@ export default {
       this.updatedeventData.hashtags = [...this.updatedeventData.hashtags];
     },
     SaveEvent() {
-      // console.log('Save BTN Called')
-      // if (this.$refs.form.validate()) {
       this.loading = true;
-      firebase.firestore
-        .collection("events")
-        .doc(this.eventInfo.id)
-        .update({
+      let datatoupdate = {
           active: this.updatedeventData.active,
           visible: this.updatedeventData.visible,
           name: this.updatedeventData.name,
@@ -588,7 +583,8 @@ export default {
             facebook: this.updatedeventData.links.facebook,
             registration: this.updatedeventData.links.registration,
             feedback: this.updatedeventData.links.feedback,
-            callforspeaker: this.updatedeventData.links.callforspeaker
+            callforspeaker: this.updatedeventData.links.callforspeaker,
+            youtube:this.updatedeventData.links.youtube
           },
           time: {
             starttime: this.updatedeventData.time.starttime,
@@ -599,17 +595,18 @@ export default {
           partners: this.updatedeventData.partners,
           team: this.updatedeventData.team,
           agenda: this.updatedeventData.agenda
-        })
-        .then(res => {
+        }
+      CustomEventServices.editCustomEvent(this.eventInfo.id,datatoupdate).then(res=>{
+        if(res.success==true){
           this.loading = false;
           this.dialog = false;
-          this.$emit("editedSuccess", "Event Edit Success");
-        })
-        .catch(e => {
-          this.loading = false;
-          console.log(e);
-          this.$emit("showSuccess", "Failed to Edit Event");
-        });
+          this.$emit("editedSuccess", res.msg);
+        }
+      }).catch(e=>{
+        console.log(e.msg);
+        this.loading = false;
+        this.$emit("editedSuccess", e.msg);
+      })
     }
   }
   // }
