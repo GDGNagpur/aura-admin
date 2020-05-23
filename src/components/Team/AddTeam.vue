@@ -99,7 +99,7 @@
                         outlined
                       ></v-text-field>
                     </v-col>
-                    <!-- <v-col md="4" xs="4" cols="12" class="pa-1 ma-0">
+                    <!-- <v-col v-if="role == 'Core Team' || role == 'Organizing Team'" md="4" xs="4" cols="12" class="pa-1 ma-0">
                       <v-text-field
                         class="ma-0"
                         v-model="password"
@@ -164,6 +164,8 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
+import firebase from '@/config/firebase'
 import TeamServices from '@/services/TeamServices'
 export default {
   props: [],
@@ -209,7 +211,8 @@ export default {
       role: null
     };
   },
-  mounted(){
+  computed:{
+    ...mapState(['userDetails'])
   },
   methods: {
     SaveEvent() {
@@ -223,9 +226,20 @@ export default {
           mbnumber: this.mbnumber,
           email: this.email,
           image: this.imageURL,
+          password:this.password,
           bio: this.bio,
           id: this.id,
           role: this.role,
+          createdBy:{
+            name:this.userDetails.name,
+            id:this.userDetails.id
+          },
+          createdOn: new Date(),
+          lastUpdatedOn:"",
+          lastUpdatedBy:{
+            name:"",
+            id:""
+          },
           socialLinks: {
             facebook: this.facebook,
             github: this.github,

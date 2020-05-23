@@ -3,7 +3,17 @@
     <template v-slot:activator="{  }">
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn fab x-small icon color="indigo" class="mx-1" outlined v-on="on" @click.stop="dialog = true" dark>
+          <v-btn
+            fab
+            x-small
+            icon
+            color="indigo"
+            class="mx-1"
+            outlined
+            v-on="on"
+            @click.stop="dialog = true"
+            dark
+          >
             <v-icon>mdi-lead-pencil</v-icon>
           </v-btn>
         </template>
@@ -12,7 +22,11 @@
     </template>
 
     <v-card v-if="dialog">
-      <v-card-title class="google-font" style="border-bottom:1px solid #e0e0e0;" primary-title>Edit {{teamData.name}} Details</v-card-title>
+      <v-card-title
+        class="google-font"
+        style="border-bottom:1px solid #e0e0e0;"
+        primary-title
+      >Edit {{teamData.name}} Details</v-card-title>
 
       <v-card-text class>
         <v-container fluid class="pa-0">
@@ -24,11 +38,16 @@
                   <v-col md="12" cols="12" class="pa-1 ma-0">
                     <p class="google-font mb-0" style="color:red">*indicates required field</p>
                   </v-col>
-                  <v-col md="12" cols="12" class="pa-1 ma-0">
+                  <v-col
+                    md="12"
+                    cols="12"
+                    class="pa-1 ma-0"
+                    v-if="(role==='Super Admin' || role==='Admin')"
+                  >
                     <p style="font-size:120%" class="my-0">Team Member Status</p>
                   </v-col>
 
-                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0">
+                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0" v-if="(role==='Super Admin')">
                     <v-select
                       :items="items"
                       v-model="updatedData.active"
@@ -37,7 +56,7 @@
                     ></v-select>
                   </v-col>
 
-                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0">
+                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0" v-if="(role==='Super Admin')">
                     <v-select
                       :items="items"
                       v-model="updatedData.visible"
@@ -46,7 +65,13 @@
                     ></v-select>
                   </v-col>
 
-                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0">
+                  <v-col
+                    md="3"
+                    xs="3"
+                    cols="12"
+                    class="pa-1 ma-0"
+                    v-if="(role==='Super Admin' || role==='Admin')"
+                  >
                     <v-text-field
                       v-model="updatedData.id"
                       class="ma-0"
@@ -57,7 +82,7 @@
                     ></v-text-field>
                   </v-col>
 
-                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0">
+                  <v-col md="3" xs="3" cols="12" class="pa-1 ma-0" v-if="(role==='Super Admin')">
                     <v-select :items="teamRole" v-model="updatedData.role" label="Role" outlined></v-select>
                   </v-col>
                 </v-row>
@@ -118,7 +143,7 @@
                     ></v-text-field>
                   </v-col>
 
-                  <v-col md="8" xs="8" cols="12" class="pa-1 ma-0">
+                  <v-col v-if="(role==='Super Admin')" md="8" xs="8" cols="12" class="pa-1 ma-0">
                     <v-text-field
                       class="ma-0"
                       v-model="updatedData.email"
@@ -216,7 +241,8 @@
 </template>
 
 <script>
-import TeamServices from '@/services/TeamServices'
+import TeamServices from "@/services/TeamServices";
+import { mapState } from "vuex";
 export default {
   props: {
     teamData: {}
@@ -262,6 +288,7 @@ export default {
       }
     };
   },
+  computed: { ...mapState(["role", "userDetails"]) },
   methods: {
     UpdateData() {
       if (this.$refs.form.validate()) {
@@ -277,6 +304,11 @@ export default {
           bio: this.updatedData.bio,
           id: this.updatedData.id,
           role: this.updatedData.role,
+          lastUpdatedOn: new Date(),
+          lastUpdatedBy: {
+            name: this.userDetails.name,
+            id: this.userDetails.id
+          },
           socialLinks: {
             facebook: this.updatedData.socialLinks.facebook,
             github: this.updatedData.socialLinks.github,
@@ -285,17 +317,19 @@ export default {
             twitter: this.updatedData.socialLinks.twitter,
             web: this.updatedData.socialLinks.web
           }
-        }
-        TeamServices.editTeamMember(this.teamData.id, data).then(res=>{
-          if(res.success==true){
+        };
+        TeamServices.editTeamMember(this.teamData.id, data)
+          .then(res => {
+            if (res.success == true) {
+              this.loading = false;
+              this.dialog = false;
+              this.$emit("editedSuccess", res.msg);
+            }
+          })
+          .catch(e => {
+            console.log(e.msg);
             this.loading = false;
-            this.dialog = false;
-            this.$emit("editedSuccess", res.msg);
-          }
-        }).catch(e=>{
-          console.log(e.msg);
-          this.loading = false;
-        })
+          });
       }
     }
   }
