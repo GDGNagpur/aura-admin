@@ -1,15 +1,13 @@
 {
   "hosting": {
-    "site":"gdgnadmin",
+    "site": "gdgnadmin",
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [ {
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
         "source": "**",
         "destination": "/index.html"
-    } ]
+      }
+    ]
   }
 }

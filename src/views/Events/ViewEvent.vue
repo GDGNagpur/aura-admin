@@ -19,15 +19,17 @@
             <span style="font-size:120%">Events</span>
           </v-btn>
           <v-spacer></v-spacer>
-          <EditEvent
+          <ActivityLog :dialogData="eventInfo"
+            v-if="(!showLoader && !userNotFound) && (role=='Super Admin' || role=='Admin')"/>
+          <EditEvent 
             :eventInfo="eventInfo"
-            v-if="!showLoader && !userNotFound"
+            v-if="(!showLoader && !userNotFound) && (role=='Super Admin' || role=='Admin')"
             @editedSuccess="showSnakeBar"
           />
           <DeleteEvent
             :EventInfo="eventInfo"
             @RemoveSuceess="showSnakeBar"
-            v-if="!showLoader && !userNotFound"
+            v-if="(!showLoader && !userNotFound) && (role=='Super Admin')"
           />
           <PublicUrl :EventInfo="eventInfo" v-if="!showLoader && !userNotFound" />
         </v-toolbar>
@@ -351,6 +353,7 @@
 <script>
 import CustomEventServices from '@/services/CustomEventServices'
 import PartnersServices from "@/services/PartnersServices"
+import { mapState } from 'vuex'
 
 import firebase from "@/config/firebase";
 
@@ -360,7 +363,9 @@ export default {
     Snakebar:()=>import('@/components/Common/Snakebar'),
     DeleteEvent:()=>import('@/components/Events/subcomponents/DeleteEvent'),
     EditEvent:()=>import('@/components/Events/CustomEvents/EditCustomEvent'),
-    PublicUrl:()=>import('@/components/Events/subcomponents/PublicUrl')
+    PublicUrl:()=>import('@/components/Events/subcomponents/PublicUrl'),
+    ActivityLog: ()=>import('@/components/Common/UserActivity')
+
   },
   data: () => ({
     snakeBarMessage: "",
@@ -388,6 +393,9 @@ export default {
       { text: "Description", value: "des" }
     ]
   }),
+  computed:{
+    ...mapState(['role'])
+  },
   mounted() {
     this.getEventData();
     this.getSpeakersData();

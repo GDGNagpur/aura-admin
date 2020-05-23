@@ -19,15 +19,16 @@
             <span style="font-size:120%">Partner</span>
           </v-btn>
           <v-spacer></v-spacer>
+          <ActivityLog :dialogData="partnerInfo" v-if="(!showLoader && !userNotFound) && (role=='Super Admin' || role=='Admin')"/>
           <EditPartner
             :partnerData="partnerInfo"
-            v-if="!showLoader && !userNotFound"
+            v-if="(!showLoader && !userNotFound) && (role=='Super Admin' || role=='Admin')"
             @editedSuccess="showSnakeBar"
           />
           <DeletePartner
             :PartnerInfo="partnerInfo"
             @RemoveSuceess="showSnakeBar"
-            v-if="!showLoader && !userNotFound"
+            v-if="(!showLoader && !userNotFound) && (role=='Super Admin')"
           />
         </v-toolbar>
       </v-col>
@@ -137,12 +138,14 @@
 
 <script>
 import PartnersServices from "@/services/PartnersServices"
+import {mapState} from 'vuex'
 export default {
   name: "ViewTeam",
   components: {
     Snakebar:()=>import('@/components/Common/Snakebar'),
     DeletePartner:()=>import('@/components/Partners/DeletePartner'),
-    EditPartner:()=>import('@/components/Partners/EditPartner')
+    EditPartner:()=>import('@/components/Partners/EditPartner'),
+    ActivityLog: ()=>import('@/components/Common/UserActivity')
   },
   data: () => ({
     snakeBarMessage: "",
@@ -156,6 +159,7 @@ export default {
   mounted() {
     this.getPartnerData();
   },
+  computed:{...mapState(['role'])},
   methods: {
     showSnakeBar(text) {
       this.snakeBarMessage = text;
